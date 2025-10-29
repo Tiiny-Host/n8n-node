@@ -1,0 +1,21 @@
+{
+    "node": "n8n-nodes-tiiny",
+    "nodeVersion": "1.0",
+    "codexVersion": "1.0",
+    "categories": [
+        "File Management",
+        "Utilities"
+    ],
+    "resources": {
+        "credentialDocumentation": [
+            {
+                "url": ""
+            }
+        ],
+        "primaryDocumentation": [
+            {
+                "url": ""
+            }
+        ]
+    }
+}

@@ -1,2 +1,4 @@
 dist
 node_modules
+.DS_Store
+patches/@n8n__node-cli.patch
