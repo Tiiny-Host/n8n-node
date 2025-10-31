@@ -1,15 +1,20 @@
 {
-	"name": "TiinyHost",
+	"name": "n8n-nodes-tiiny-host",
 	"version": "0.1.0",
-	"description": "Tiiny Host API",
+	"description": "n8n community node to interact with Tiiny Host - Upload, update, and manage your static sites",
 	"license": "MIT",
 	"homepage": "https://tiiny.host",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"n8n",
+		"tiiny",
+		"tiiny-host",
+		"static-hosting",
+		"website-hosting"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "Tiiny Host",
+		"email": "support@tiiny.host"
 	},
 	"repository": {
 		"type": "git",
@@ -34,12 +39,11 @@
 			"dist/credentials/TiinyApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Tiiny/Tiiny.node.js",
-			"dist/nodes/Example/Example.node.js"
+			"dist/nodes/Tiiny/Tiiny.node.js"
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "^0.13.0",
+		"@n8n/node-cli": "^0.14.0",
 		"eslint": "9.32.0",
 		"prettier": "3.6.2",
 		"release-it": "^19.0.4",
@@ -48,17 +52,12 @@
 	"peerDependencies": {
 		"n8n-workflow": "*"
 	},
-	"dependencies": {
-		"axios": "^1.13.1",
-		"change-case": "4.1.2",
-		"form-data": "^4.0.0"
-	},
 	"pnpm": {
 		"overrides": {
 			"change-case": "4.1.2"
-		},
-		"patchedDependencies": {
-			"@n8n/node-cli": "patches/@n8n__node-cli.patch"
 		}
+	},
+	"dependencies": {
+		"change-case": "4.1.2"
 	}
 }

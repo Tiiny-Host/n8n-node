@@ -3,66 +3,112 @@ import type {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
-	IDataObject,
-	IHttpRequestOptions,
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
-import FormData from 'form-data';
+import { createProperties, executeCreate } from './actions/create.operation';
+import { updateProperties, executeUpdate } from './actions/update.operation';
+import { deleteProperties, executeDelete } from './actions/delete.operation';
 
 export class Tiiny implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Tiiny',
-		name: 'tiiny',
+		displayName: 'Tiiny Host',
+		name: 'tiiny hosy',
 		icon: { light: 'file:tiiny.svg', dark: 'file:tiiny.dark.svg' },
 		group: ['transform'],
 		version: 1,
-		description: 'Upload HTML, PDF, or ZIP to Tiiny and return link',
-		defaults: { name: 'Tiiny' },
+		description: 'Manage sites on Tiiny Host',
+		defaults: { name: 'Tiiny Host' },
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
 		usableAsTool: true,
 		credentials: [{ name: 'tiinyApi', required: true }],
 		properties: [
 			{
-				displayName: 'Binary Property',
-				name: 'binaryPropertyName',
-				type: 'string',
-				default: 'data',
-				description: 'Name of the binary property that contains the file',
-				required: true,
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Create Site',
+						value: 'create',
+						description: 'Upload a new file to create a site on Tiiny',
+						action: 'Create a site',
+					},
+					{
+						name: 'Update Site',
+						value: 'update',
+						description: 'Update an existing site on Tiiny',
+						action: 'Update a site',
+					},
+					{
+						name: 'Delete Site',
+						value: 'delete',
+						description: 'Delete a site from Tiiny',
+						action: 'Delete a site',
+					},
+				],
+				default: 'create',
 			},
-			{
-				displayName: 'Subdomain',
-				name: 'subdomain',
-				type: 'string',
-				default: '',
-				placeholder: 'mysite',
-				description: 'Optional subdomain. If set, domain becomes <subdomain><domainSuffix>.',
-			},
-			{
-				displayName: 'Domain Suffix',
-				name: 'domainSuffix',
-				type: 'string',
-				default: '.tiiny.site',
-				description: 'Domain suffix appended to subdomain',
-			},
-			{
-				displayName: 'Password Protected',
-				name: 'passwordProtected',
-				type: 'boolean',
-				default: false,
-				description: 'Whether the uploaded site should be password protected',
-			},
-			{
-				displayName: 'Password',
-				name: 'password',
-				type: 'string',
-				typeOptions: { password: true },
-				default: '',
-				displayOptions: { show: { passwordProtected: [true] } },
-				description: 'Password when password protection is enabled',
-			},
+			// Merge all operation properties
+			...createProperties,
+			...updateProperties,
+			...deleteProperties,
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			async getDomainSuffixes(this: IExecuteFunctions | any) {
+				const apiBaseUrl = 'http://localhost:8000';
+				const endpoint = `${apiBaseUrl.replace(/\/$/, '')}/v3/external/pub/profile`;
+
+				const defaultSuffixes = ['tiiny.site', 'tiiny.co.uk'];
+
+				try {
+					let apiKey: string | undefined;
+					try {
+						const credentials = await this.getCredentials('tiinyApi');
+						apiKey = credentials?.apiKey as string;
+					} catch {
+						// No credentials → fallback defaults
+						return defaultSuffixes.map((suffix) => ({
+							name: `.${suffix}`,
+							value: `.${suffix}`,
+						}));
+					}
+
+					if (!apiKey) {
+						return defaultSuffixes.map((suffix) => ({
+							name: `.${suffix}`,
+							value: `.${suffix}`,
+						}));
+					}
+
+					const response = await this.helpers.httpRequest.call(this, {
+						method: 'POST',
+						url: endpoint,
+						headers: {
+							'X-Api-Key': apiKey,
+							'user-agent': 'n8n',
+						},
+					});
+
+					const customDomains = response?.profile?.customDomains ?? [];
+					const suffixes = customDomains.length > 0 ? [...customDomains, ...defaultSuffixes] : defaultSuffixes;
+
+					return suffixes.map((suffix: string) => ({
+						name: `.${suffix}`,
+						value: `.${suffix}`,
+					}));
+				} catch (error) {
+					return defaultSuffixes.map((suffix) => ({
+						name: `.${suffix}`,
+						value: `.${suffix}`,
+					}));
+				}
+			},
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -71,68 +117,31 @@ export class Tiiny implements INodeType {
 
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			try {
-				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', itemIndex) as string;
-				const subdomain = this.getNodeParameter('subdomain', itemIndex, '') as string;
-				const domainSuffix = this.getNodeParameter('domainSuffix', itemIndex, '.tiiny.site') as string;
-				const passwordProtected = this.getNodeParameter('passwordProtected', itemIndex, false) as boolean;
-				const password = this.getNodeParameter('password', itemIndex, '') as string;
-				const apiBaseUrl = 'http://localhost:8000/v3' as string;
+				const operation = this.getNodeParameter('operation', itemIndex) as string;
 
-				const item = items[itemIndex];
-				if (!item.binary || !item.binary[binaryPropertyName]) {
-					throw new NodeOperationError(this.getNode(), `No binary data property '${binaryPropertyName}' found`, { itemIndex });
+				let result: INodeExecutionData;
+
+				// Route to the appropriate operation
+				if (operation === 'create') {
+					result = await executeCreate.call(this, itemIndex);
+				} else if (operation === 'update') {
+					result = await executeUpdate.call(this, itemIndex);
+				} else if (operation === 'delete') {
+					result = await executeDelete.call(this, itemIndex);
+				} else {
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
+						itemIndex,
+					});
 				}
 
-				// Get binary data
-				const binaryData = item.binary[binaryPropertyName];
-				const fileBuffer = await this.helpers.getBinaryDataBuffer(itemIndex, binaryPropertyName);
-				const fileName = binaryData.fileName || 'file';
-				const mimeType = binaryData.mimeType || 'application/octet-stream';
-
-				// ✅ Create FormData instead of using useFormData
-				const formData = new FormData();
-				formData.append('domainSuffix', domainSuffix);
-				formData.append('siteSettings', JSON.stringify({ passwordProtected, password: password || '' }));
-				formData.append('filesToAdd', fileBuffer, { filename: fileName, contentType: mimeType });
-
-				if (subdomain && subdomain.trim() !== '') {
-					formData.append('domain', `${subdomain}${domainSuffix}`);
-				}
-
-				const options: IHttpRequestOptions = {
-					method: 'POST',
-					url: `${apiBaseUrl.replace(/\/$/, '')}/external/pub/upload`,
-					headers: formData.getHeaders(), // important!
-					body: formData as unknown as IDataObject,
-					returnFullResponse: true,
-				};
-
-				const response = await this.helpers.httpRequestWithAuthentication.call(this, 'tiinyApi', options);
-				const responseData = (response as any).body ?? response;
-				const link = responseData?.link || responseData?.data?.link;
-
-				if (!link) {
-					throw new NodeOperationError(this.getNode(), 'No link returned from API', { itemIndex });
-				}
-
-				returnData.push({
-					json: {
-						link,
-						fileName,
-						subdomain: subdomain || '',
-						passwordProtected,
-						originalResponse: responseData,
-					},
-					pairedItem: { item: itemIndex },
-				});
+				returnData.push(result);
 			} catch (error) {
 				if (this.continueOnFail()) {
-					returnData.push({ json: { error: (error as any).message }, pairedItem: { item: itemIndex } });
+					returnData.push({
+						json: { error: (error as any).message },
+						pairedItem: { item: itemIndex },
+					});
 				} else {
-					if ((error as any).context) {
-						(error as any).context.itemIndex = itemIndex;
-						throw error;
-					}
 					throw new NodeOperationError(this.getNode(), error as Error, { itemIndex });
 				}
 			}

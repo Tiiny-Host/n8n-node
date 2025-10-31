@@ -1,3 +1,6 @@
 ignoredBuiltDependencies:
   - eslint-plugin-n8n-nodes-base
   - unrs-resolver
+
+patchedDependencies:
+  '@n8n/node-cli': patches/@n8n__node-cli.patch

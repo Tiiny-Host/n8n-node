@@ -1,5 +1,5 @@
 {
-    "node": "n8n-nodes-tiiny",
+    "node": "n8n-nodes-tiiny-host",
     "nodeVersion": "1.0",
     "codexVersion": "1.0",
     "categories": [
