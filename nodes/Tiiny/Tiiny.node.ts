@@ -60,7 +60,7 @@ export class Tiiny implements INodeType {
 	methods = {
 		loadOptions: {
 			async getDomainSuffixes(this: IExecuteFunctions | any) {
-				const apiBaseUrl = 'http://localhost:8000';
+				const apiBaseUrl = 'https://api.tiiny.host';
 				const endpoint = `${apiBaseUrl.replace(/\/$/, '')}/v3/external/pub/profile`;
 
 				const defaultSuffixes = ['tiiny.site', 'tiiny.co.uk'];
