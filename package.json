@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-tiiny-host",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "n8n community node to interact with Tiiny Host - Upload, update, and manage your static sites",
 	"license": "MIT",
 	"homepage": "https://tiiny.host",
