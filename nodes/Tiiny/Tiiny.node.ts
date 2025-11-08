@@ -12,7 +12,7 @@ import { deleteProperties, executeDelete } from './actions/delete.operation';
 export class Tiiny implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Tiiny Host',
-		name: 'tiiny hosy',
+		name: 'tiiny',
 		icon: { light: 'file:tiiny.svg', dark: 'file:tiiny.dark.svg' },
 		group: ['transform'],
 		version: 1,

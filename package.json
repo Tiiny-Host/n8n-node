@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-tiiny-host",
-	"version": "0.1.2",
+	"version": "0.1.10",
 	"description": "n8n community node to interact with Tiiny Host - Upload, update, and manage your static sites",
 	"license": "MIT",
 	"homepage": "https://tiiny.host",
@@ -27,7 +27,7 @@
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
+		"prepublishOnly": "pnpm run build"
 	},
 	"files": [
 		"dist"
@@ -51,13 +51,5 @@
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
-	},
-	"pnpm": {
-		"overrides": {
-			"change-case": "4.1.2"
-		}
-	},
-	"dependencies": {
-		"change-case": "4.1.2"
 	}
 }

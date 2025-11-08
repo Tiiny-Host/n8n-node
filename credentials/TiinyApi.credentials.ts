@@ -1,4 +1,9 @@
-import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
+import type {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 export class TiinyApi implements ICredentialType {
 	name = 'tiinyApi';
@@ -26,6 +31,17 @@ export class TiinyApi implements ICredentialType {
 			},
 		},
 	};
+
+	// 👇 This is the required test block for n8n credential verification
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://api.tiiny.host',
+			url: '/v3/external/pub/profile', // or any endpoint that validates the key
+			method: 'GET', // GET is preferred for testing credentials
+			headers: {
+				'X-Api-Key': '={{$credentials.apiKey}}',
+				'User-Agent': 'n8n',
+			},
+		},
+	};
 }
-
-
