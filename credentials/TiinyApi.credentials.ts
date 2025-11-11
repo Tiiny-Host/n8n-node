@@ -40,7 +40,7 @@ export class TiinyApi implements ICredentialType {
 			method: 'GET', // GET is preferred for testing credentials
 			headers: {
 				'X-Api-Key': '={{$credentials.apiKey}}',
-				'User-Agent': 'n8n',
+				'user-agent': 'n8n',
 			},
 		},
 	};
