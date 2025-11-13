@@ -5,8 +5,8 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
-import { createProperties, executeCreate } from './actions/create.operation';
-import { updateProperties, executeUpdate } from './actions/update.operation';
+import { createProperties, executeCreate, executeCreateFromHtml } from './actions/create.operation';
+import { updateProperties, executeUpdate, executeUpdateFromHtml } from './actions/update.operation';
 import { deleteProperties, executeDelete } from './actions/delete.operation';
 
 export class Tiiny implements INodeType {
@@ -36,10 +36,22 @@ export class Tiiny implements INodeType {
 						action: 'Create a site',
 					},
 					{
+						name: 'Create Site from HTML',
+						value: 'createHtml',
+						description: 'Create a new site from raw HTML content',
+						action: 'Create a site from HTML',
+					},
+					{
 						name: 'Update Site',
 						value: 'update',
 						description: 'Update an existing site on Tiiny',
 						action: 'Update a site',
+					},
+					{
+						name: 'Update Site from HTML',
+						value: 'updateHtml',
+						description: 'Update an existing site using raw HTML content',
+						action: 'Update a site from HTML',
 					},
 					{
 						name: 'Delete Site',
@@ -95,7 +107,8 @@ export class Tiiny implements INodeType {
 					});
 
 					const customDomains = response?.profile?.customDomains ?? [];
-					const suffixes = customDomains.length > 0 ? [...customDomains, ...defaultSuffixes] : defaultSuffixes;
+					const suffixes =
+						customDomains.length > 0 ? [...customDomains, ...defaultSuffixes] : defaultSuffixes;
 
 					return suffixes.map((suffix: string) => ({
 						name: `.${suffix}`,
@@ -124,8 +137,12 @@ export class Tiiny implements INodeType {
 				// Route to the appropriate operation
 				if (operation === 'create') {
 					result = await executeCreate.call(this, itemIndex);
+				} else if (operation === 'createHtml') {
+					result = await executeCreateFromHtml.call(this, itemIndex);
 				} else if (operation === 'update') {
 					result = await executeUpdate.call(this, itemIndex);
+				} else if (operation === 'updateHtml') {
+					result = await executeUpdateFromHtml.call(this, itemIndex);
 				} else if (operation === 'delete') {
 					result = await executeDelete.call(this, itemIndex);
 				} else {
