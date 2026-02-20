@@ -36,10 +36,9 @@ export class TiinyApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://api.tiiny.host',
-			url: '/v3/external/pub/profile', // or any endpoint that validates the key
-			method: 'POST', // GET is preferred for testing credentials
+			url: '/v3/external/pub/profile',
+			method: 'POST',
 			headers: {
-				'X-Api-Key': '={{$credentials.apiKey}}',
 				'user-agent': 'n8n',
 			},
 		},

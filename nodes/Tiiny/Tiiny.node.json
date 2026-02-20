@@ -9,12 +9,12 @@
     "resources": {
         "credentialDocumentation": [
             {
-                "url": ""
+                "url": "https://github.com/Tiiny-Host/n8n-node#authentication"
             }
         ],
         "primaryDocumentation": [
             {
-                "url": ""
+                "url": "https://github.com/Tiiny-Host/n8n-node#readme"
             }
         ]
     }

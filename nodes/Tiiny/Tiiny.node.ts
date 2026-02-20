@@ -72,39 +72,22 @@ export class Tiiny implements INodeType {
 	methods = {
 		loadOptions: {
 			async getDomainSuffixes(this: IExecuteFunctions | any) {
-				const apiBaseUrl = 'https://api.tiiny.host';
-				const endpoint = `${apiBaseUrl.replace(/\/$/, '')}/v3/external/pub/profile`;
+				const endpoint = 'https://api.tiiny.host/v3/external/pub/profile';
 
 				const defaultSuffixes = ['tiiny.site', 'tiiny.co.uk'];
 
 				try {
-					let apiKey: string | undefined;
-					try {
-						const credentials = await this.getCredentials('tiinyApi');
-						apiKey = credentials?.apiKey as string;
-					} catch {
-						// No credentials → fallback defaults
-						return defaultSuffixes.map((suffix) => ({
-							name: `.${suffix}`,
-							value: `.${suffix}`,
-						}));
-					}
-
-					if (!apiKey) {
-						return defaultSuffixes.map((suffix) => ({
-							name: `.${suffix}`,
-							value: `.${suffix}`,
-						}));
-					}
-
-					const response = await this.helpers.httpRequest.call(this, {
-						method: 'POST',
-						url: endpoint,
-						headers: {
-							'X-Api-Key': apiKey,
-							'user-agent': 'n8n',
+					const response = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'tiinyApi',
+						{
+							method: 'POST',
+							url: endpoint,
+							headers: {
+								'user-agent': 'n8n',
+							},
 						},
-					});
+					);
 
 					const customDomains = response?.profile?.customDomains ?? [];
 					const suffixes =
